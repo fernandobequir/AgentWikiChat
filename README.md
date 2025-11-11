@@ -2,9 +2,11 @@
 
 [![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-3.4.0-green.svg)](https://github.com/yourusername/AgentWikiChat)
+[![Version](https://img.shields.io/badge/version-3.5.0-green.svg)](https://github.com/ffontanini/AgentWikiChat)
 
 **AgentWikiChat** es un agente conversacional inteligente multi-provider basado en .NET 9 que implementa el patrón **ReAct (Reasoning + Acting)** con soporte completo para **Tool Calling**. Permite interactuar con múltiples proveedores de IA y ejecutar herramientas especializadas de forma autónoma.
+
+**🎉 NUEVO en v3.5.0**: Arquitectura genérica de control de versiones con soporte para SVN y Git.
 
 ----
 
@@ -102,6 +104,7 @@ Editar `appsettings.json`:
 ```json
 {
   "SVN": {
+    "Provider": "SVN",
     "RepositoryUrl": "https://svn.company.com/repos/project",
     "Username": "myuser",
     "Password": "mypassword",
@@ -111,6 +114,21 @@ Editar `appsettings.json`:
   }
 }
 ```
+
+**Parámetros:**
+- **`Provider`**: Tipo de control de versiones ("SVN", "Git", etc.)
+- **`RepositoryUrl`**: URL del repositorio SVN (HTTP, HTTPS, SVN, FILE protocols)
+- **`Username`**: Usuario para autenticación (opcional si el repo es público)
+- **`Password`**: Contraseña para autenticación
+- **`WorkingCopyPath`**: Ruta local de working copy para operación `status` (opcional)
+- **`CommandTimeout`**: Timeout en segundos para operaciones SVN
+- **`EnableLogging`**: Habilita logging detallado de operaciones
+
+**Ejemplos de URL:**
+- HTTP: `http://svn.company.com/repos/project`
+- HTTPS: `https://svn.secure.com/repos/project`
+- SVN: `svn://svn.company.com/repos/project`
+- FILE: `file:///C:/SVNRepos/project`
 
 6. **Ejecutar**
 ```bash
@@ -191,107 +209,70 @@ dotnet run
 - Seguridad: Bloquea commit, delete, update, merge, etc.
 - Compatible con SVN 1.6+
 
-### 4. 🔮 RAG (Futuro)
+### 🆕 4. Git Repository (v3.5.0)
+- **`git_operation`**: Ejecuta operaciones de solo lectura en repositorios Git
+- Operaciones soportadas:
+  - **`log`**: Ver historial de commits
+  - **`show`**: Detalles de un commit específico
+  - **`ls-tree`**: Listar archivos en el árbol
+  - **`blame`**: Ver autoría línea por línea
+  - **`diff`**: Ver diferencias entre commits
+  - **`status`**: Estado del working directory
+  - **`branch`**: Listar ramas
+  - **`tag`**: Listar tags
+- Seguridad: Bloquea commit, push, pull, add, rm, etc.
+- Compatible con Git 2.0+
+
+### 5. 🔮 RAG (Futuro)
 - Búsqueda vectorial y recuperación de documentos
 
 ---
 
-## ⚙️ Configuración Avanzada
+## 📚 Documentación
 
-### Configuración del Agente ReAct
+- 📐 **[Arquitectura](AgentWikiChat/Docs/ARCHITECTURE.md)** - Diseño y patrones del sistema
+- 🗄️ **[Database Tool](AgentWikiChat/Docs/SqlServerTool-README.md)** - Uso de consultas SQL
+- 📦 **[SVN Tool](AgentWikiChat/Docs/SVNTool-README.md)** - Operaciones en repositorios SVN
+- 🔍 **[SVN Troubleshooting](AgentWikiChat/Docs/SVN-TroubleshootingGuide.md)** - Solución de problemas SVN
+- 📝 **[Session Logging](AgentWikiChat/Docs/SessionLogging-README.md)** - Sistema de logging
 
-```json
-{
-  "Agent": {
-    "MaxIterations": 10,
-    "IterationTimeoutSeconds": 300,
-    "EnableReActPattern": true,
-    "EnableMultiToolLoop": true,
-    "ShowIntermediateSteps": true,
-    "EnableSelfCorrection": true,
-    "PreventDuplicateToolCalls": true,
-    "MaxConsecutiveDuplicates": 3
-  }
-}
+### 🆕 v3.5.0 - Control de Versiones Genérico
+- 🏗️ **[VersionControl Architecture](AgentWikiChat/Docs/VersionControl-Architecture.md)** - Arquitectura completa
+- 📋 **[VersionControl Changelog](AgentWikiChat/Docs/VersionControl-Changelog.md)** - Changelog técnico
+- 📊 **[VersionControl Summary](AgentWikiChat/Docs/VersionControl-Summary.md)** - Resumen ejecutivo
+
+## 🏗️ Arquitectura v3.5.0 - Control de Versiones Genérico
+
 ```
+RepositoryToolHandler
+    │
+    └── VersionControlHandlerFactory
+            │
+            ├── IVersionControlHandler (interfaz)
+            │       │
+            │       └── BaseVersionControlHandler (base común)
+            │               │
+            │               ├── SvnVersionControlHandler
+            │               └── GitVersionControlHandler
+            │
+            └── Fácil extensión: Mercurial, TFS, Perforce
 
-### Proveedores de IA
-
-#### Ollama (Local)
-```json
-{
-  "Name": "Ollama-Local",
-  "Type": "Ollama",
-  "BaseUrl": "http://localhost:11434",
-  "Model": "qwen2.5:7b-instruct",
-  "Temperature": 0.9
-}
 ```
-
-#### OpenAI
-```json
-{
-  "Name": "OpenAI-GPT4",
-  "Type": "OpenAI",
-  "BaseUrl": "https://api.openai.com/v1",
-  "ApiKey": "tu-api-key-aqui",
-  "Model": "gpt-4-turbo-preview",
-  "Temperature": 0.7
-}
-```
-
-#### Anthropic Claude
-```json
-{
-  "Name": "Anthropic-Claude-Sonnet",
-  "Type": "Anthropic",
-  "BaseUrl": "https://api.anthropic.com",
-  "ApiKey": "tu-api-key-aqui",
-  "Model": "claude-3-5-sonnet-20241022",
-  "Temperature": 0.7
-}
-```
-
-### Configuración de SVN
-
-```json
-{
-  "SVN": {
-    "RepositoryUrl": "https://svn.company.com/repos/project",
-    "Username": "myuser",
-    "Password": "mypassword",
-    "WorkingCopyPath": "",
-    "CommandTimeout": 60,
-    "EnableLogging": true
-  }
-}
-```
-
-**Parámetros:**
-- **`RepositoryUrl`**: URL del repositorio SVN (HTTP, HTTPS, SVN, FILE protocols)
-- **`Username`**: Usuario para autenticación (opcional si el repo es público)
-- **`Password`**: Contraseña para autenticación
-- **`WorkingCopyPath`**: Ruta local de working copy para operación `status` (opcional)
-- **`CommandTimeout`**: Timeout en segundos para operaciones SVN
-- **`EnableLogging`**: Habilita logging detallado de operaciones
-
-**Ejemplos de URL:**
-- HTTP: `http://svn.company.com/repos/project`
-- HTTPS: `https://svn.secure.com/repos/project`
-- SVN: `svn://svn.company.com/repos/project`
-- FILE: `file:///C:/SVNRepos/project`
-
----
 
 ## 📁 Estructura del Proyecto
 
 ```
-AgentWikiChat/
 ├── Configuration/     # Configuración del agente
 ├── Models/            # Modelos de datos
 ├── Services/
 │   ├── AI/            # Servicios de proveedores de IA
 │   ├── Database/      # Handlers de bases de datos
+│   ├── VersionControl/ # 🆕 Handlers de control de versiones (v3.5.0)
+│   │   ├── IVersionControlHandler.cs
+│   │   ├── BaseVersionControlHandler.cs
+│   │   ├── SvnVersionControlHandler.cs
+│   │   ├── GitVersionControlHandler.cs
+│   │   └── VersionControlHandlerFactory.cs
 │   ├── Handlers/      # Handlers de herramientas
 │   ├── AgentOrchestrator.cs
 │   ├── ReActEngine.cs
@@ -301,146 +282,12 @@ AgentWikiChat/
 │   ├── ARCHITECTURE.md
 │   ├── SqlServerTool-README.md
 │   ├── SVNTool-README.md
+│   ├── SVN-TroubleshootingGuide.md
+│   ├── VersionControl-Architecture.md    # 🆕 v3.5.0
+│   ├── VersionControl-Changelog.md       # 🆕 v3.5.0
+│   ├── VersionControl-Summary.md         # 🆕 v3.5.0
 │   └── SessionLogging-README.md
 ├── Scripts/           # Scripts de utilidad y diagnóstico
 ├── Logs/              # Logs de sesiones (no versionado)
 ├── Program.cs         # Punto de entrada
 └── appsettings.json   # Configuración
-```
-
----
-
-## 📚 Documentación
-
-- 📐 **[Arquitectura](AgentWikiChat/Docs/ARCHITECTURE.md)** - Diseño y patrones del sistema
-- 🗄️ **[Database Tool](AgentWikiChat/Docs/SqlServerTool-README.md)** - Uso de consultas SQL
-- 📦 **[SVN Tool](AgentWikiChat/Docs/SVNTool-README.md)** - Operaciones en repositorios SVN
-- 📝 **[Session Logging](AgentWikiChat/Docs/SessionLogging-README.md)** - Sistema de logging
-
----
-
-## 🔒 Seguridad
-
-### Base de Datos
-- ✅ Solo consultas `SELECT` permitidas
-- ❌ Bloqueadas: INSERT, UPDATE, DELETE, DROP, TRUNCATE, EXEC
-- 🛡️ Validación antes de ejecutar consultas
-- ⏱️ Timeout configurable para prevenir consultas lentas
-- 📊 Límite de filas retornadas
-
-### SVN Repository
-- ✅ Solo operaciones de lectura: log, info, list, cat, diff, blame, status
-- ❌ Bloqueadas: commit, delete, add, checkout, update, switch, merge, copy, move, mkdir, import, export, lock
-- 🛡️ Lista blanca de comandos permitidos
-- ⏱️ Timeout configurable
-- 🔐 Non-interactive mode (sin prompts)
-- 📊 Compatible con SVN 1.6+
-
-### Logging
-- 📁 Logs locales excluidos del repositorio (`.gitignore`)
-- 🔐 No se registran contraseñas ni datos sensibles de configuración
-- 🗂️ Permisos restringidos al usuario que ejecuta
-
----
-
-## 🧪 Testing
-
-```bash
-# Ejecutar en modo debug
-dotnet run
-
-# Ver configuración
-/config
-
-# Listar herramientas
-/tools
-
-# Probar Wikipedia
-busca información sobre .NET
-
-# Probar Base de Datos
-SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
-
-# Probar SVN
-muéstrame los últimos 5 commits
-```
-
-### Troubleshooting SVN
-
-Si tienes problemas de conexión con SVN:
-
-1. **Verifica la instalación del cliente SVN:**
-```bash
-svn --version
-```
-
-2. **Ejecuta el script de diagnóstico:**
-```bash
-# Windows
-Scripts\SVN-Diagnostic.bat
-
-# Linux/Mac
-./Scripts/SVN-Diagnostic.sh
-```
-
-3. **Usa una working copy local (recomendado):**
-```bash
-# Hacer checkout manual
-svn checkout http://svn.server.com/repos/project C:\Projects\MyProject
-
-# Configurar en appsettings.json
-{
-  "SVN": {
-    "WorkingCopyPath": "C:\\Projects\\MyProject"
-  }
-}
-```
-
-Ver la **[Guía completa de troubleshooting SVN](AgentWikiChat/Docs/SVN-TroubleshootingGuide.md)** para más detalles.
-
----
-
-## 🗺️ Roadmap
-
-- [x] Soporte para PostgreSQL ✅
-- [x] Integración con SVN ✅
-- [x] Session Logging ✅
-- [ ] Soporte para MySQL y SQLite
-- [ ] RAG con embeddings y búsqueda vectorial
-- [ ] Web API REST
-- [ ] Dashboard web para monitoreo
-- [ ] Herramienta de búsqueda en archivos locales
-- [ ] Integración con GitHub API
-- [ ] Soporte para Azure OpenAI
-- [ ] Docker containerization
-- [ ] Unit tests y integration tests
-
----
-
-## 📄 Licencia
-
-Este proyecto está bajo la licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
-
----
-
-## 👥 Autores
-
-- **Fernando Bequir** - *Trabajo Inicial*
-- **Francisco Fontanini** - *SQL Tools & SVN Integration*
-
----
-
-## 🙏 Agradecimientos
-
-- [Ollama](https://ollama.ai/) por proporcionar LLMs locales
-- [LM Studio](https://lmstudio.ai/) por la interfaz local de modelos
-- [OpenAI](https://openai.com/) por la API de GPT
-- [Anthropic](https://anthropic.com/) por Claude
-- [Wikipedia](https://wikipedia.org/) por la API pública
-- [Apache Subversion](https://subversion.apache.org/) por el sistema de control de versiones
-
----
-
-<p align="center">
-  Hecho con ❤️ usando .NET 9
-</p>
