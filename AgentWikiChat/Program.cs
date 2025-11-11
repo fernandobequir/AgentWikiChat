@@ -146,7 +146,7 @@ try
     Console.WriteLine($"=== {appName} v{version} ===");
     Console.WriteLine($"🤖 Proveedor IA: {toolService.GetProviderName()}");
     Console.WriteLine($"🎯 Sistema: Multi-Provider Tool Calling + ReAct Pattern");
-    Console.WriteLine($"🌐 Proveedores: Ollama, OpenAI, LM Studio, Anthropic Claude");
+    Console.WriteLine($"🌐 Proveedores: Ollama, OpenAI, LM Studio, Anthropic, Gemini");
     Console.WriteLine($"🧠 ReAct Engine: {(agentConfig.EnableReActPattern ? "✅ ACTIVADO" : "⚠️ DESACTIVADO")}");
     Console.WriteLine($"🔗 Multi-Tool Loop: {(agentConfig.EnableMultiToolLoop ? "✅ ACTIVADO" : "⚠️ DESACTIVADO")} (máx {agentConfig.MaxIterations} iteraciones)");
 
